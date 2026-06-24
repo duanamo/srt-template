@@ -4,9 +4,16 @@ Starter template for Dynamo Technologies internal web applications. Includes aut
 
 ## Engineering audit
 
-Standardized 9-category engineering-quality audit (codebase-audit rubric) of the Status Report Tracker
-MVP built one-shot from this template (no org standards loaded). Full report:
-[`.assessment/report.md`](.assessment/report.md).
+Standardized 9-category engineering-quality audit (codebase-audit rubric v1.0.0) of the Status Report
+Tracker MVP built one-shot from this template (no org standards loaded).
+
+**Methodology & evidence:**
+
+- [`.assessment/report.md`](.assessment/report.md) — full report (scores, strengths, risks, with citations)
+- [`.assessment/METHODOLOGY.md`](.assessment/METHODOLOGY.md) — how scoring works (categories, weights, caps, evidence rules)
+- [`.assessment/rubric.yml`](.assessment/rubric.yml) — canonical rubric (weights, score caps, bands)
+- [`.assessment/categories/`](.assessment/categories) — per-category scores with cited `file:line` evidence
+- [`.assessment/report.json`](.assessment/report.json) — machine-readable output
 
 **Overall: 68 / 100 — _functional_with_weakness_** · confidence: medium · build time: **20m 17s**
 
