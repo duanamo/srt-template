@@ -1,0 +1,43 @@
+{
+  "category": "engineering_discipline",
+  "rubric_version": "1.0.0",
+  "raw_score": 3,
+  "score": 3,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 10,
+  "weighted": 6.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "README documents stack, quick start, setup checklist, scripts, and project structure", "citation": "README.md:1-44" },
+    { "claim": "CLAUDE.md plus a 17KB STYLEGUIDE.md provide architecture and coding conventions", "citation": "CLAUDE.md:60-111" },
+    { "claim": "ESLint flat config is present, thoughtfully tuned, and passes clean; vendored ui/ and the styleguide are ignored with rationale comments", "citation": "eslint.config.js:24-45" },
+    { "claim": "Prettier config + ignore are committed and source conforms", "citation": "command:prettier-check-src#exit=0" },
+    { "claim": "package-lock.json is committed and dependencies are version-pinned with carets", "citation": "package.json:21-56" },
+    { "claim": "Repo layout is clean and conventional: src/lib by role, infra/, supabase/, .github/workflows", "citation": "structural:conventional-repo-layout" }
+  ],
+  "strengths": [
+    { "point": "Lint config is deliberate, not boilerplate — it disables a SvelteKit rule that conflicts with the config-driven nav pattern and documents why", "citation": "eslint.config.js:26-31" },
+    { "point": "Commit subjects follow conventional style with meaningful intent (feat: / chore:), not 'wip'/'fix' dumps", "citation": "command:git-log-sample#exit=0" }
+  ],
+  "risks": [
+    { "point": "Documentation describes a different application than the one that exists: README's Project Structure and Auth Architecture sections reference hooks.server.ts, login/, auth/callback/, and +layout.server.ts that are absent — a reader following the docs is misled", "citation": "README.md:121-153" },
+    { "point": "CI does not enforce lint or tests (only type-check + build), so the committed lint/test discipline is not gated", "citation": ".github/workflows/ci.yml:22-25" },
+    { "point": "Only two commits exist (template scaffold + one MVP commit), so there is no incremental history to demonstrate sustained discipline", "citation": "structural:two-commit-history" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Run lint+test in CI and reconcile README/CLAUDE.md with the actual frontend-only build (or add the documented backend)", "citation": ".github/workflows/ci.yml:22" },
+    "down_one": { "condition": "Remove the ESLint config or stop committing the lockfile", "citation": "eslint.config.js:7" }
+  },
+  "structural_evidence": {
+    "conventional-repo-layout": {
+      "claim": "Top-level layout is conventional and self-explanatory: src/lib organized by role (data, utils, config, components), plus infra/, supabase/, .github/workflows, and committed config files",
+      "basis": ["package.json:9-20", "src/lib/config/navigation.ts:15", "eslint.config.js:1-6"]
+    },
+    "two-commit-history": {
+      "claim": "git log shows exactly two commits on the branch: a template scaffold and a single MVP feature commit",
+      "basis": ["command:git-log-sample#exit=0"]
+    }
+  }
+}

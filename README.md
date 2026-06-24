@@ -2,6 +2,36 @@
 
 Starter template for Dynamo Technologies internal web applications. Includes auth, deployment, and CI/CD out of the box.
 
+## Engineering audit
+
+Standardized 9-category engineering-quality audit (codebase-audit rubric) of the Status Report Tracker
+MVP built one-shot from this template (no org standards loaded). Full report:
+[`.assessment/report.md`](.assessment/report.md).
+
+**Overall: 68 / 100 — _functional_with_weakness_** · confidence: medium
+
+| Category (weight) | Score |
+|---|:---:|
+| 01 Architectural coherence (15) | 4/5 |
+| 02 Implementation quality (15) | 4/5 |
+| 03 Operational readiness (15) | 3/5 |
+| 04 Type safety & contracts (10) | 4/5 |
+| 05 Test strategy (10) | 3/5 |
+| 06 Scalability & extensibility (10) | 3/5 |
+| 07 Security & failure handling (10) | 3/5 |
+| 08 Engineering discipline (10) | 3/5 |
+| 09 Technical debt & risk (5) | 3/5 |
+
+**Strengths:** the store is the single reactive owner of state; discriminated `SaveResult`/`DeleteResult`
+types force explicit success/failure handling; clean Draft → validate → typed-domain pipeline.
+
+**Risks:** doc/reality drift — README, `CLAUDE.md`, and CI still describe a Supabase + Azure-OAuth backend
+the shipped frontend-only app doesn't have; the UI layer is untested (logic-only) and CI doesn't run tests;
+localStorage-as-database (full rewrite per mutation, linear lookups).
+
+Verification at audit time: `check` ✓ · `lint` ✓ · `test` ✓ (35 tests).
+
+
 ## Tech Stack
 
 - **SvelteKit** with **Svelte 5** (runes mode)

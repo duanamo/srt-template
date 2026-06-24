@@ -1,0 +1,36 @@
+{
+  "category": "technical_debt_risk",
+  "rubric_version": "1.0.0",
+  "raw_score": 3,
+  "score": 3,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 5,
+  "weighted": 3.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "Zero TODO/FIXME/HACK/XXX markers anywhere in src/", "citation": "command:grep-todos#exit=1" },
+    { "claim": "The single eslint-disable in authored code is justified by an inline rationale, not a silent suppression", "citation": "src/lib/data/store.svelte.ts:36-37" },
+    { "claim": "No competing patterns: one store, one validation module, one toast store — no drift between coexisting approaches", "citation": "src/lib/toast.svelte.ts:9" },
+    { "claim": "Largest hidden risk is documentation that describes a backend (Supabase/auth/RLS/server) the build does not contain", "citation": "structural:doc-reality-drift" }
+  ],
+  "strengths": [
+    { "point": "Effectively zero declared debt at this size — no TODO markers, no commented-out code, no dead scaffolding in authored modules", "citation": "command:grep-todos#exit=1" },
+    { "point": "Brittle-seam comments are honest: the store flags exactly why deleteReport is unconditional and why a plain Date is used", "citation": "src/lib/data/store.svelte.ts:260-261" }
+  ],
+  "risks": [
+    { "point": "The biggest 12-month risk is the doc/reality gap: README+CLAUDE.md+.env.example+CI all assume a Supabase/auth backend, so the next engineer will either wire phantom infrastructure or distrust the docs — silent architectural drift baked in at scaffold time", "citation": "structural:doc-reality-drift" },
+    { "point": "localStorage-as-database with full-rewrite persistence and no migration path is acceptable for an MVP but is real debt the moment data must survive a browser or be shared", "citation": "src/lib/data/store.svelte.ts:64-75" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Reconcile the docs with the actual build (or implement the backend) so the documented architecture stops being latent debt", "citation": "README.md:146-153" },
+    "down_one": { "condition": "Introduce untracked TODO/FIXME markers in hot paths", "citation": "src/lib/data/store.svelte.ts:64" }
+  },
+  "structural_evidence": {
+    "doc-reality-drift": {
+      "claim": "README, CLAUDE.md, .env.example, and the CI build step all describe/assume a Supabase + Azure-OAuth + server-hooks backend, but the shipped app is frontend-only with a localStorage store and no server routes, auth, or Supabase usage",
+      "basis": ["README.md:146-153", "CLAUDE.md:155-160", "src/lib/data/store.svelte.ts:267", "src/lib/types.ts:1-2"]
+    }
+  }
+}

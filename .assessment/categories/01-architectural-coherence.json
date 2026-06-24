@@ -1,0 +1,38 @@
+{
+  "category": "architectural_coherence",
+  "rubric_version": "1.0.0",
+  "raw_score": 4,
+  "score": 4,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 15,
+  "weighted": 12.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "Layered concept-based layout: data/store, utils (pure), config, components, routes — each with a single clear role", "citation": "src/lib/data/store.svelte.ts:28" },
+    { "claim": "Pure utility modules (validation, integrity, format) hold all business logic, separated from rendering", "citation": "src/lib/utils/validation.ts:27-47" },
+    { "claim": "Single reactive store owns all app data; routes and components read it rather than each fetching independently", "citation": "src/routes/(app)/reports/+page.svelte:2" },
+    { "claim": "Hand-written domain types are the single source of truth; comment forbids importing from internal modules", "citation": "src/lib/types.ts:1-4" },
+    { "claim": "Dependency direction is clean: store imports utils; utils import only types; no utils->store or component->store-internals reaches", "citation": "structural:no-cross-layer-imports" }
+  ],
+  "strengths": [
+    { "point": "Store is the single reactive owner of state; components subscribe via $derived rather than duplicating data flow", "citation": "src/routes/(app)/dashboard/+page.svelte:20-34" },
+    { "point": "Orchestrator pattern followed — page routes compose small components and call store/util functions, holding no rendering or business logic of their own", "citation": "src/routes/(app)/reports/+page.svelte:44-66" },
+    { "point": "Validation and referential-integrity rules live in dedicated pure modules, not scattered through the store mutators", "citation": "src/lib/utils/integrity.ts:29-53" }
+  ],
+  "risks": [
+    { "point": "CLAUDE.md prescribes a $lib/server/ services layer and +page.server.ts data fetching that this build does not implement, so the documented architecture does not match the actual one", "citation": "CLAUDE.md:73-74" },
+    { "point": "A single global store singleton is the only data boundary; there is no service/adapter seam to swap localStorage for the documented Supabase backend without touching every mutator", "citation": "src/lib/data/store.svelte.ts:267" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Introduce a documented data-access seam (e.g. $lib/server/ or a repository interface) so the store's localStorage backing can be swapped without editing mutators, matching CLAUDE.md's layering", "citation": "src/lib/data/store.svelte.ts:64-75" },
+    "down_one": { "condition": "Let a component import store-internal persistence helpers directly, collapsing the store boundary", "citation": "src/lib/data/store.svelte.ts:64" }
+  },
+  "structural_evidence": {
+    "no-cross-layer-imports": {
+      "claim": "utils/ modules import only from $lib/types; the store imports utils and seed but no component imports the store's private persistence path",
+      "basis": ["src/lib/utils/validation.ts:1-14", "src/lib/utils/integrity.ts:1", "src/lib/data/store.svelte.ts:1-17"]
+    }
+  }
+}

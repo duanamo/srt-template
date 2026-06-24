@@ -1,0 +1,36 @@
+{
+  "category": "test_strategy",
+  "rubric_version": "1.0.0",
+  "raw_score": 3,
+  "score": 3,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 10,
+  "weighted": 6.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "vitest is configured and the test suite runs green: 4 files, 35 tests passing", "citation": "command:vitest-run#exit=0" },
+    { "claim": "Store tests cover CRUD, referential-integrity blocking, and timestamp semantics with an injected deterministic clock", "citation": "src/lib/data/store.test.ts:166-205" },
+    { "claim": "Tests exist beyond the inherited example — store, validation, and integrity logic are unit-tested", "citation": "src/lib/utils/integrity.test.ts:1" },
+    { "claim": "Validation edge cases are tested (invalid email, missing fields, nonexistent references)", "citation": "src/lib/data/store.test.ts:36-46" }
+  ],
+  "strengths": [
+    { "point": "Tests assert real behavior on the business-logic core (referential integrity, create/update/delete invariants), not trivial getters", "citation": "src/lib/data/store.test.ts:72-109" },
+    { "point": "Deterministic clock injection makes timestamp assertions stable and non-flaky", "citation": "src/lib/data/store.test.ts:4-6" }
+  ],
+  "risks": [
+    { "point": "No component, route, or end-to-end tests — the entire UI layer (forms, dialogs, tables, dashboard derivations) is untested; only pure logic and the store are covered", "citation": "structural:unit-only-no-component-or-e2e" },
+    { "point": "CI never runs the test suite (only type-check + build), so a regression in tested logic would not block a merge", "citation": ".github/workflows/ci.yml:22-25" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Run vitest in CI on every PR and add a few @testing-library/svelte component tests for the form dialogs", "citation": ".github/workflows/ci.yml:22" },
+    "down_one": { "condition": "Remove the vitest config and test script", "citation": "package.json:17" }
+  },
+  "structural_evidence": {
+    "unit-only-no-component-or-e2e": {
+      "claim": "All four test files target pure functions or the store class; no .svelte component tests and no Playwright/e2e harness exist",
+      "basis": ["src/lib/data/store.test.ts:1", "src/lib/utils/validation.test.ts:1", "src/lib/utils/integrity.test.ts:1", "src/lib/utils.test.ts:1"]
+    }
+  }
+}

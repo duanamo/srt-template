@@ -1,0 +1,39 @@
+{
+  "category": "security_failure_handling",
+  "rubric_version": "1.0.0",
+  "raw_score": 3,
+  "score": 3,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 10,
+  "weighted": 6.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "No hardcoded secrets, API keys, or private keys in source", "citation": "command:grep-secrets#exit=1" },
+    { "claim": "No eval or new Function on any input", "citation": "command:grep-eval#exit=1" },
+    { "claim": ".env.example contains placeholders only and is explicitly marked reference-only", "citation": ".env.example:1-6" },
+    { "claim": "All external input (form drafts) is validated at the store boundary before mutating state; failures return typed errors rather than crashing", "citation": "src/lib/data/store.svelte.ts:105-110" },
+    { "claim": "Errors propagate explicitly via Result types; the one broad catch (JSON.parse of localStorage) falls back to reset() deliberately, not silently", "citation": "src/lib/data/store.svelte.ts:54-61" },
+    { "claim": "There is no server, SQL, shell-out, or deserialization of untrusted remote data — the only trust boundary is form input into the client store", "citation": "structural:no-server-trust-boundary" }
+  ],
+  "strengths": [
+    { "point": "Secrets are fully externalized — none in source, deploy injects them from GitHub Secrets at runtime", "citation": ".github/workflows/deploy-dev.yml:53-61" },
+    { "point": "Input validation is centralized and re-checks referential existence, so a forged draft referencing a nonexistent owner/project is rejected", "citation": "src/lib/utils/validation.ts:62-66" }
+  ],
+  "risks": [
+    { "point": "README and CLAUDE.md claim a (app)/+layout.ts auth guard that redirects unauthenticated users to /login, but neither that load function nor a /login route exists — the protected route group renders unconditionally with no auth", "citation": "src/routes/(app)/+layout.svelte:1-19" },
+    { "point": "CLAUDE.md asserts RLS-and-Azure-OAuth as the security model, but the shipped app has no auth, no Supabase, and no server boundary at all — the documented threat model does not describe the running code", "citation": "CLAUDE.md:155-160" },
+    { "point": "localStorage is the data store; any XSS or shared-machine access can read/modify all app data, with no integrity protection", "citation": "src/lib/data/store.svelte.ts:48-62" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Either implement the documented auth guard + /login or correct the docs to describe the actual no-auth client-only model, removing the phantom trust boundary", "citation": "CLAUDE.md:159-160" },
+    "down_one": { "condition": "Commit a real secret to source or introduce a server endpoint that interpolates form input into a query/shell command", "citation": ".env.example:9" }
+  },
+  "structural_evidence": {
+    "no-server-trust-boundary": {
+      "claim": "The app has no server routes, hooks, SQL, or shell execution; the sole external-input path is form drafts entering the client-side store",
+      "basis": ["command:grep-eval#exit=1", "src/routes/+page.ts:1-7", "src/lib/data/store.svelte.ts:105"]
+    }
+  }
+}

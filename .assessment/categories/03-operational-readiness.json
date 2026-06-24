@@ -1,0 +1,40 @@
+{
+  "category": "operational_readiness",
+  "rubric_version": "1.0.0",
+  "raw_score": 3,
+  "score": 3,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 15,
+  "weighted": 9.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "Multi-stage Dockerfile builds and runs the adapter-node server on port 3000", "citation": "Dockerfile:1-15" },
+    { "claim": "CI workflow runs type-check + build on every push/PR to dev and main", "citation": ".github/workflows/ci.yml:3-25" },
+    { "claim": "Dev and prod deploy workflows build/push the image and deploy to EC2 via Docker Compose + Caddy", "citation": ".github/workflows/deploy-dev.yml:30-63" },
+    { "claim": ".env.example documents the required runtime env vars with placeholders only", "citation": ".env.example:8-16" },
+    { "claim": "README has concrete run/build/deploy instructions and a full setup checklist", "citation": "README.md:38-42" },
+    { "claim": "No structured logger, metrics, tracing, or health endpoint exists anywhere in the app", "citation": "structural:no-observability-hooks" }
+  ],
+  "strengths": [
+    { "point": "CI gates type-check and build on every push/PR, so a broken build cannot merge to dev or main", "citation": ".github/workflows/ci.yml:22-25" },
+    { "point": "Dev/prod separation is real: distinct workflows, prefixed secrets, and separate containers behind Caddy auto-SSL", "citation": ".github/workflows/deploy-dev.yml:7-8" },
+    { "point": "Secrets are kept entirely outside the repo — written to EC2 from GitHub Secrets at deploy time", "citation": ".github/workflows/deploy-dev.yml:53-61" }
+  ],
+  "risks": [
+    { "point": "CI Build step injects Supabase/ORIGIN env stubs the app never reads, and the deploy workflows ship a frontend-only localStorage app while wiring it as if it had a Supabase backend — the operational story is template-inherited and decoupled from what runs", "citation": ".github/workflows/ci.yml:27-34" },
+    { "point": "No health/readiness endpoint, structured logging, env validation at startup, or graceful shutdown — failures surface only as raw adapter-node crashes", "citation": "structural:no-observability-hooks" },
+    { "point": "CI does not run the test suite or lint — only type-check and build — so the 35 tests are not enforced before merge", "citation": ".github/workflows/ci.yml:10-25" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Add structured logging and a /healthz route, and run lint+test in CI alongside the build", "citation": ".github/workflows/ci.yml:10" },
+    "down_one": { "condition": "Remove the Dockerfile or break the CI build step", "citation": "Dockerfile:1" }
+  },
+  "structural_evidence": {
+    "no-observability-hooks": {
+      "claim": "No health endpoint, metrics, tracing, structured logger, or startup env validation exists in src/ — the app has no server routes at all (no hooks.server.ts, no +server.ts)",
+      "basis": ["src/routes/+page.ts:1-7", "src/routes/(app)/+layout.svelte:1-19"]
+    }
+  }
+}

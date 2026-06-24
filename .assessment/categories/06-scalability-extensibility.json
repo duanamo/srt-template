@@ -1,0 +1,36 @@
+{
+  "category": "scalability_extensibility",
+  "rubric_version": "1.0.0",
+  "raw_score": 3,
+  "score": 3,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 10,
+  "weighted": 6.0,
+  "confidence": "medium",
+  "confidence_reason": "Surface area is small and frontend-only; extensibility is judged on the present seams (store mutators, config-driven nav, feature-grouped components) rather than a proven scaling path.",
+  "evidence": [
+    { "claim": "Navigation is config-driven — adding a section/page is a data edit, not a component rewrite", "citation": "src/lib/config/navigation.ts:15-27" },
+    { "claim": "Components are grouped by feature (reports/, projects/, users/), so a new entity can follow the existing slice pattern", "citation": "src/lib/components/reports/ReportFormDialog.svelte:1" },
+    { "claim": "Adding a new domain entity means a uniform set of edits (type + validate + store mutator + route), each in an isolated module", "citation": "src/lib/data/store.svelte.ts:208-264" },
+    { "claim": "No N+1 or unbounded server loops are possible — all data is in-memory arrays filtered/derived client-side", "citation": "structural:in-memory-no-query-layer" }
+  ],
+  "strengths": [
+    { "point": "Per-feature component directories let multiple engineers work on users/projects/reports in parallel with minimal collision", "citation": "src/lib/components/projects/ProjectFormDialog.svelte:1" },
+    { "point": "The store concentrates all mutation in one well-tested class, so cross-cutting changes (e.g. swapping the backing store) have a single edit point", "citation": "src/lib/data/store.svelte.ts:28-41" }
+  ],
+  "risks": [
+    { "point": "Every read filters the full in-memory array on each access (e.g. userById is a linear find called per table row); fine at seed scale, but there is no indexing or pagination seam for growth", "citation": "src/routes/(app)/reports/+page.svelte:128-130" },
+    { "point": "localStorage persistence rewrites the entire dataset on every mutation and has no migration story, so the backing store cannot scale or evolve schema without a rewrite", "citation": "src/lib/data/store.svelte.ts:64-75" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Introduce the documented service/repository seam so the store can move to a paginated backend without touching consumers, and add the o(1) lookup maps the per-row finds want", "citation": "src/lib/data/store.svelte.ts:92-102" },
+    "down_one": { "condition": "Add a god-file central registry that every new feature must edit", "citation": "src/lib/config/navigation.ts:15" }
+  },
+  "structural_evidence": {
+    "in-memory-no-query-layer": {
+      "claim": "There is no database or query layer; all entities are $state arrays filtered and derived client-side, so server-side N+1 / blocking-I/O footguns do not apply",
+      "basis": ["src/lib/data/store.svelte.ts:29-31", "src/routes/(app)/dashboard/+page.svelte:20-34"]
+    }
+  }
+}

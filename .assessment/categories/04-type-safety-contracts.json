@@ -1,0 +1,32 @@
+{
+  "category": "type_safety_contracts",
+  "rubric_version": "1.0.0",
+  "raw_score": 4,
+  "score": 4,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 10,
+  "weighted": 8.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "TypeScript strict mode is enabled and checkJs is on", "citation": "tsconfig.json:6-11" },
+    { "claim": "svelte-check passes with zero type errors across the project", "citation": "command:svelte-check#exit=0" },
+    { "claim": "Untrusted all-string Draft shapes are validated at the store boundary into typed domain objects before entering state", "citation": "src/lib/types.ts:48-71" },
+    { "claim": "Validation re-checks enum membership and referential existence at the boundary, not just presence — e.g. role/status/owner must be valid and exist", "citation": "src/lib/utils/validation.ts:40-66" },
+    { "claim": "Domain enums are const-tuple-derived union types, so invalid literals are unrepresentable in typed code", "citation": "src/lib/types.ts:5-12" }
+  ],
+  "strengths": [
+    { "point": "Clean Draft -> validate -> typed-domain pipeline treats form input as tainted until validated, exactly the contract discipline the rubric rewards", "citation": "src/lib/data/store.svelte.ts:105-120" },
+    { "point": "Const-assertion enums give compile-time exhaustiveness — overallStatusTone's switch has no default and still type-checks", "citation": "src/lib/utils/format.ts:32-41" }
+  ],
+  "risks": [
+    { "point": "The only explicit `any` usages are in vendored shadcn chart code, not authored boundary code, but they are committed as source", "citation": "src/lib/components/ui/chart/chart-utils.ts:25" },
+    { "point": "Validation casts draft strings with `as Role`/`as ProjectStatus` after an includes() check; correct here, but the cast pattern is easy to misuse if a future field skips the guard", "citation": "src/lib/utils/validation.ts:42-43" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Add a schema library (Zod/Valibot) so the Draft->domain mapping is a single typed parse with inferred types instead of manual includes()+cast pairs", "citation": "src/lib/utils/validation.ts:40-44" },
+    "down_one": { "condition": "Disable strict mode in tsconfig", "citation": "tsconfig.json:11" }
+  },
+  "structural_evidence": {}
+}

@@ -1,0 +1,34 @@
+{
+  "category": "implementation_quality",
+  "rubric_version": "1.0.0",
+  "raw_score": 4,
+  "score": 4,
+  "cap_applied": false,
+  "cap_reason": null,
+  "weight_pct": 15,
+  "weighted": 12.0,
+  "confidence": "high",
+  "confidence_reason": null,
+  "evidence": [
+    { "claim": "svelte-check passes with 0 errors / 0 warnings across 4859 files", "citation": "command:svelte-check#exit=0" },
+    { "claim": "ESLint passes clean on all non-vendored source", "citation": "command:eslint#exit=0" },
+    { "claim": "Prettier reports all source files conform to code style", "citation": "command:prettier-check-src#exit=0" },
+    { "claim": "Store mutators are short, uniform, and return a discriminated SaveResult/DeleteResult rather than throwing — readable in isolation", "citation": "src/lib/data/store.svelte.ts:105-153" },
+    { "claim": "Intent-revealing comments explain the why (e.g. why a plain Date, not SvelteDate, is used) rather than restating the code", "citation": "src/lib/data/store.svelte.ts:34-37" },
+    { "claim": "Naming is consistent and descriptive across types, utils, and routes; no abbreviations or magical helpers", "citation": "src/lib/utils/format.ts:6-26" }
+  ],
+  "strengths": [
+    { "point": "Result types (SaveResult, DeleteResult, DeleteCheck) give callers explicit success/failure handling instead of exceptions or nulls", "citation": "src/lib/data/store.svelte.ts:21-22" },
+    { "point": "Largest application components stay near the 150-line guideline; logic is extracted to utils and child components", "citation": "src/lib/components/reports/ReportFormDialog.svelte:1" },
+    { "point": "Derived state is expressed declaratively with $derived chains rather than imperative recomputation", "citation": "src/routes/(app)/reports/+page.svelte:35-42" }
+  ],
+  "risks": [
+    { "point": "The four explicit `any` escape hatches all sit in vendored shadcn chart/utils code, but they are tracked as source and would surface if that code is edited rather than treated as vendored", "citation": "src/lib/components/ui/chart/chart-tooltip.svelte:9" },
+    { "point": "Filter state in the reports route uses terse single-letter prefixes (fProject, fAuthor) that read less clearly than the rest of the codebase", "citation": "src/routes/(app)/reports/+page.svelte:22-25" }
+  ],
+  "score_movers": {
+    "up_one": { "condition": "Add a dedicated lint:src target that excludes vendored ui/ from any-density concerns and document the vendored boundary so the only escape hatches are provably upstream", "citation": "eslint.config.js:33-45" },
+    "down_one": { "condition": "Introduce duplicated validation logic in a component instead of reusing $lib/utils/validation", "citation": "src/lib/utils/validation.ts:27" }
+  },
+  "structural_evidence": {}
+}
